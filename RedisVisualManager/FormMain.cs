@@ -69,12 +69,14 @@ namespace RedisVisualManager
                 {
                     string str = sr.ReadLine();
                     string[] strs = str.Split(',');
-                    if (strs.Length == 4)
+                    if (strs.Length >= 4)
                     {
                         txtHost.Text = strs[0];
                         txtPort.Text = strs[1];
                         txtAuth.Text = strs[2];
                         txtTimeout.Text = strs[3];
+                        if (strs.Length >= 5)
+                            txtPattern.Text = strs[4];
                     }
                 }
             }
@@ -84,7 +86,7 @@ namespace RedisVisualManager
         {
             using (StreamWriter sw = new StreamWriter(INI_FILE, false))
             {         
-                sw.Write(string.Format("{0},{1},{2},{3}", txtHost.Text, txtPort.Text, txtAuth.Text, txtTimeout.Text));
+                sw.Write(string.Format("{0},{1},{2},{3},{4}", txtHost.Text, txtPort.Text, txtAuth.Text, txtTimeout.Text, txtPattern.Text));
             }
         }
 
@@ -160,13 +162,13 @@ namespace RedisVisualManager
 
         private void treeKeys_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            bool isKey = e.Node.Nodes.Count == 0;
-            if (isKey)
+            string key = GetFullKey(e.Node);
+            bool containsKey = RedisClient.ContainsKey(key);
+            if (containsKey)
             {
                 this.table.Clear();
                 this.txtHashKey.Text = this.txtHashValue.Text = string.Empty;
 
-                string key = GetFullKey(e.Node);
                 RedisKeyType keyType = RedisClient.GetEntryType(key);
                 this.lblKey.Text = keyType.ToString();
                 this.txtKey.Text = key;
